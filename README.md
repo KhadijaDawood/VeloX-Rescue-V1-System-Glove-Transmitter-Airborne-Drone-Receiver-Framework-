@@ -13,7 +13,7 @@ An enterprise-grade, dual-subsystem IoT platform featuring a wireless **Gesture-
 | * MPU6050 Accelerometer/Gyro      |                                  | * NRF24L01+ Wireless Transceiver   |
 | * Flex / Tilt Sensors             |                                  | * MPU6050 IMU Flight Balance       |
 | * NRF24L01+ Transceiver Antenna   |                                  | * 4x Brushless ESC Motor Drivers   |
-| * 9V Portable Power Source        |                                  | * Dual Status LEDs & Acoustic Horn |
+| * LiPo battery                                     |                                  | * Dual Status LEDs & Acoustic Horn |
 +-----------------------------------+                                  +------------------------------------+
 ---
 
