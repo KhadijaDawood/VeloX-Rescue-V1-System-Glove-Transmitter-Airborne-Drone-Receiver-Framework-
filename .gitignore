@@ -1,0 +1,7 @@
+*.hex
+*.elf
+*.o
+build/
+.build/
+*.bak
+.vscode/
