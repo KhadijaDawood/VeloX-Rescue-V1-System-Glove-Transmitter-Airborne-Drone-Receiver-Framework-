@@ -55,6 +55,11 @@ graph LR
 
 ---
 
+## 🛠️ Complete Digital Prototype Assembly
+
+[![Velo-X-Rescue-V1-Drone-Frame-(2)-2.jpg](https://i.postimg.cc/BQq68dn3/Velo-X-Rescue-V1-Drone-Frame-(2)-2.jpg)](https://postimg.cc/py6x4cjc)
+[![Screenshot-20260729-195602-display-0-png.png](https://i.postimg.cc/L8rzSC4p/Screenshot-20260729-195602-display-0-png.png)](https://postimg.cc/CRsZH4fP)
+
 ## 🚀 Firmware Automation & Failsafe Logic
 
 * **Dynamic Non-Blocking Loop:** Engine built entirely on `millis()` timing loops, eliminating `delay()` blocks to preserve microsecond motor update rates.
