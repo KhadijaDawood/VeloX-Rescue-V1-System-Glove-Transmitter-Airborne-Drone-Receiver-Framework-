@@ -13,16 +13,28 @@ An enterprise-grade, dual-subsystem IoT platform featuring a wireless **Gesture-
 
 ## 🏗️ System Architecture & Data Flow
 
-+-----------------------------------+         2.4 GHz RF Link          +------------------------------------+
-|   GESTURE TRANSMITTER (GLOVE)     |  ============================>   |    AIRBORNE RECEIVER (DRONE)       |
-|                                   |   (Payload: Pitch, Roll, Throttle) |                                    |
-| * Arduino Uno / Nano              |                                  | * Arduino Nano R3 (Main Control)   |
-| * MPU6050 Accelerometer/Gyro      |                                  | * NRF24L01+ Wireless Transceiver   |
-| * Flex / Tilt Sensors             |                                  | * MPU6050 IMU Flight Balance       |
-| * NRF24L01+ Transceiver Antenna   |                                  | * 4x Brushless ESC Motor Drivers   |
-| * LiPo battery                                     |                                  | * Dual Status LEDs & Acoustic Horn |
-+-----------------------------------+                                  +------------------------------------+
----
+```mermaid
+graph LR
+    subgraph Transmitter [Subsystem A: Gesture Control Glove]
+        A[MPU6050 IMU Sensor] -->|I2C Protocol| B[Arduino Nano Core]
+        C[Flex / Motion Switches] -->|Analog/Digital| B
+        B -->|SPI Pipeline| D[NRF24L01+ Transceiver]
+    end
+
+    D -.->|2.4 GHz Wireless RF Link| E
+
+    subgraph Receiver [Subsystem B: Airborne Drone Controller]
+        E[NRF24L01+ Antenna] -->|SPI Pipeline| F[Arduino Nano R3]
+        G[MPU6050 Flight IMU] -->|I2C Balance Loop| F
+        F -->|PWM Channels D3, D5, D6, D9| H[4x Brushless ESC Drivers]
+        F -->|Failsafe Interlock| I[Dual-LED Matrix & Audio Horn]
+    end
+
+    style D fill:#f9f,stroke:#333,stroke-width:2px
+    style E fill:#f9f,stroke:#333,stroke-width:2px
+```
+
+
 
 ## ⚙️ Integrated Hardware Framework
 
