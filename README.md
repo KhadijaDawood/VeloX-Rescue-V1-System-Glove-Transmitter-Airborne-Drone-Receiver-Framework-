@@ -54,9 +54,19 @@ An enterprise-grade, dual-subsystem IoT platform featuring a wireless **Gesture-
 
 ## 💻 Integrated Code Base Structure
 
-This repository includes the complete flight control and dynamic communication logic:
-* `VeloX_rescue_v1.ino` — Master Airborne Receiver Code (NRF24L01 + MPU6050 + ESC Control + Failsafe)
-* *Glove Transmitter Firmware logic is embedded within the dynamic struct packet definitions.*
+```text
+├── VeloX-Rescue-Master/
+│   ├── Transmitter-Glove/
+│   │   ├── glove_transmitter.ino      # Gesture processing & RF packet transmission
+│   │   └── config.h                   # MPU6050 & NRF24L01 pin configurations
+│   ├── Receiver-Drone/
+│   │   ├── drone_receiver.ino         # Flight telemetry, PWM generation & failsafes
+│   │   └── stabilization.h            # PID balance loops & IMU register logic
+│   └── docs/
+│       ├── system_architecture.md     # Full structural calculations
+│       └── cad_assemblies/            # STEP & Onshape CAD source files
+```
+
 
 ---
 
@@ -66,5 +76,5 @@ This repository includes the complete flight control and dynamic communication l
 - [x] NRF24L01 low-latency RF payload protocol design
 - [x] Non-blocking signal timeout & emergency hover failsafe logic
 - [x] PWM ESC motor output driver configuration
-- [ ] Onshape 3D CAD Frame & Protective Casing Assembly
+- [x] Onshape 3D CAD Frame & Protective Casing Assembly
 - [ ] ESP32-CAM live video streaming pipeline setup
