@@ -4,6 +4,13 @@ An enterprise-grade, dual-subsystem IoT platform featuring a wireless **Gesture-
 
 ---
 
+### 🌐 System Architecture Navigation
+
+| [🏠 Master System Repo](https://github.com/KhadijaDawood/VeloX-Rescue-V1-System-Glove-Transmitter-Airborne-Drone-Receiver-Framework-) | [🧤 Glove Transmitter Repo](https://github.com/KhadijaDawood/VeloX-Glove-Transmitter-V1) | [🛸 Drone Receiver Telemetry](https://github.com/KhadijaDawood/VeloX-Rescue-V1-Receiver-Telemetry) |
+| :---: | :---: | :---: |
+
+---
+
 ## 🏗️ System Architecture & Data Flow
 
 +-----------------------------------+         2.4 GHz RF Link          +------------------------------------+
