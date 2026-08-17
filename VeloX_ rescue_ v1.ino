@@ -118,54 +118,63 @@ void setup() {
 
 // ==================== MAIN LOOP ====================
 void loop() {
-  if (radio.available()) {
-    radio.read(&receivedData, sizeof(ControlPacket));
-    lastHeartbeat = millis();
-  }
-
-  // Serial Monitor Simulation Fallback (bench testing only — remove before field flights)
-  if (Serial.available() > 0) {
-    char cmd = Serial.read();
-    if (cmd == 'c' || cmd == 'C') {
-      lastHeartbeat = millis();
-      receivedData.throttle = 500;
-      receivedData.pitch = STICK_CENTER;
-      receivedData.roll  = STICK_CENTER;
-      receivedData.yaw   = STICK_CENTER;
-    } else if (cmd == 'd' || cmd == 'D') {
-      lastHeartbeat = 0;
+    // 1. Check Wireless Packet from Gesture Glove
+    if (radio.available()) {
+        radio.read(&receivedData, sizeof(ControlPacket));
+        lastHeartbeat = millis();
     }
-  }
 
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
-  updateAttitude(a, g);
+    // 2. Serial Monitor Simulation Fallback (bench testing only - remove before field flights)
+    if (Serial.available() > 0) {
+        char cmd = Serial.read();
+        if (cmd == 'c' || cmd == 'C') {
+            lastHeartbeat = millis();
+        }
+        receivedData.throttle = 500; 
+        receivedData.pitch = STICK_CENTER;
+        receivedData.roll = STICK_CENTER;
+        receivedData.yaw = STICK_CENTER;
+    } else if (receivedData.throttle == 0) {
+        lastHeartbeat = 0; // Trigger Instant Timeout if throttle is cleared
+    }
 
-  if (millis() - lastHeartbeat > SIGNAL_TIMEOUT) {
-    triggerFailsafeMode();
-  } else {
-    failsafeActive = false; // link is good, clear any prior failsafe ramp state
-    executeFlightControl(receivedData.throttle, receivedData.pitch, receivedData.roll, receivedData.yaw);
-  }
+    // 3. Read MPU6050 Telemetry & Process Orientation Filter
+    sensors_event_t a, g, temp;
+    mpu.getEvent(&a, &g, &temp);
+    updateAttitude(a, g);
 
-  delay(20); // 50 Hz control loop
+    // 4. Check Link Timeout for Emergency Failsafe
+    if (millis() - lastHeartbeat > SIGNAL_TIMEOUT) {
+        triggerFailsafeMode();
+    } else {
+        failsafeActive = false; // link is good, clear any prior failsafe ramp state
+        executeFlightControl(receivedData.throttle, receivedData.pitch, receivedData.roll, receivedData.yaw);
+    }
+
+    // 5. Precise 50 Hz Control Loop Sync (Replaces unsafe delay command)
+    while (micros() - lastFilterTimeUs < 20000) {
+        // Strict deterministic wait window to ensure exactly 20ms cycles
+    }
 }
+
 
 // ==================== ATTITUDE ESTIMATION ====================
 void updateAttitude(sensors_event_t &a, sensors_event_t &g) {
-  unsigned long nowUs = micros();
-  float dt = (nowUs - lastFilterTimeUs) / 1000000.0;
-  lastFilterTimeUs = nowUs;
-  if (dt <= 0 || dt > 0.5) return; // guard against first-run / overflow glitches
+    unsigned long nowUs = micros();
+    float dt = (nowUs - lastFilterTimeUs) / 1000000.0;
+    lastFilterTimeUs = nowUs; // Lock timestamp immediately for accurate integration
 
-  float accelPitch = atan2(a.acceleration.y,
-                       sqrt(a.acceleration.x * a.acceleration.x + a.acceleration.z * a.acceleration.z)) * 180.0 / PI;
-  float accelRoll = atan2(-a.acceleration.x, a.acceleration.z) * 180.0 / PI;
+    if (dt <= 0 || dt > 0.5) return; // guard against first-run or overflow glitches
 
-  // Complementary filter: trust gyro short-term, accel long-term (corrects drift)
-  pitchAngle = 0.98 * (pitchAngle + g.gyro.x * dt * 180.0 / PI) + 0.02 * accelPitch;
-  rollAngle  = 0.98 * (rollAngle  + g.gyro.y * dt * 180.0 / PI) + 0.02 * accelRoll;
+    // Calculate Pitch and Roll from Accelerometer data
+    float accelPitch = atan2(a.acceleration.y, sqrt(a.acceleration.x * a.acceleration.x + a.acceleration.z * a.acceleration.z)) * 180.0 / PI;
+    float accelRoll  = atan2(-a.acceleration.x, a.acceleration.z) * 180.0 / PI;
+
+    // Complementary Filter: High-pass Gyro (converted to deg/s) + Low-pass Accelerometer
+    pitchAngle = 0.98 * (pitchAngle + (g.gyro.x * 180.0 / PI) * dt) + 0.02 * accelPitch;
+    rollAngle  = 0.98 * (rollAngle  + (g.gyro.y * 180.0 / PI) * dt) + 0.02 * accelRoll;
 }
+
 
 // ==================== FLIGHT CONTROL / MOTOR MIXER ====================
 void executeFlightControl(int baseThrottle, int pitchRaw, int rollRaw, int yawRaw) {
